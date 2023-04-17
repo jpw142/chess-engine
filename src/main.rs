@@ -215,7 +215,7 @@ fn calc_bishop(b:&mut Board, x: i32, y: i32, piece: Piece) {
     for i in 1..8 {
         if let Some(piece_dest) = b.read(x - i,y + i) {
             if piece_dest.c != piece.c {
-                b.moves.push(Move{p0: piece, x0: x, y0: y, p1: piece_dest, x1: x + i, y1: y + i, capture: piece_dest.c != NONE, promotion: false, enpassant: false, castle: false});
+                b.moves.push(Move{p0: piece, x0: x, y0: y, p1: piece_dest, x1: x - i, y1: y + i, capture: piece_dest.c != NONE, promotion: false, enpassant: false, castle: false});
             }
             else {
                 break;
@@ -251,7 +251,7 @@ fn calc_bishop(b:&mut Board, x: i32, y: i32, piece: Piece) {
     for i in 1..8 {
         if let Some(piece_dest) = b.read(x + i,y - i) {
             if piece_dest.c != piece.c {
-                b.moves.push(Move{p0: piece, x0: x, y0: y, p1: piece_dest, x1: x + i, y1: y + i, capture: piece_dest.c != NONE, promotion: false, enpassant: false, castle: false});
+                b.moves.push(Move{p0: piece, x0: x, y0: y, p1: piece_dest, x1: x + i, y1: y - i, capture: piece_dest.c != NONE, promotion: false, enpassant: false, castle: false});
             }
             else {
                 break;
@@ -414,16 +414,15 @@ impl Evaluate for Board {
     }
 }
 
-fn domove(mut b: Board, m: Move) -> Board {
+fn domove(b: &mut Board, m: Move){
+    // println!("{:?}", m);
     b.b[(m.y1*WIDTH + m.x1) as usize] = m.p0;
-    b.b[(m.y1*WIDTH + m.x1) as usize] = Piece{p: Type::None, c: NONE};
-    return b;
+    b.b[(m.y0*WIDTH + m.x0) as usize] = Piece{p: Type::None, c: NONE};
 }
 
-fn undomove(mut b: Board, m: Move) -> Board {
+fn undomove(b: &mut Board, m: Move){
     b.b[(m.y1*WIDTH + m.x1) as usize] = m.p1;
     b.b[(m.y0*WIDTH + m.x0) as usize] = m.p0;
-    return b;
 }
 
 fn setup() -> Board {
@@ -465,23 +464,18 @@ fn setup() -> Board {
     return b
 }
 
-fn negamax(b: &mut Board, depth: i32, alpha: f32, beta: f32) -> f32 {
+fn negamax(mut b: Board, depth: i32, mut alpha: f32, beta: f32) -> f32 {
     if depth == 0{
-        return b.evaluate();
+        return b.c * b.evaluate();
     }
     b.calculate();
-    let mut _alpha = alpha;
-    let _beta = beta;
     let mut value: f32 = -9999999.;
     for m in b.clone().moves {
-        let neg_alpha = _alpha * -1.;
-        let neg_beta = _beta * -1.;
-    
-        let mut b_new = domove(b.clone(), m);
-        value = value.max(-1. * negamax(&mut b_new, depth - 1, neg_beta, neg_alpha));
-        undomove(b_new, m);
-        _alpha = alpha.max(value);
-        if _alpha >= _beta {
+        domove(&mut b, m);
+        value = value.max(-1. * negamax(b.clone(), depth - 1, beta * -1., alpha * -1.));
+        undomove(&mut b, m);
+        alpha = alpha.max(value);
+        if alpha >= beta {
             break;
         }  
     }
@@ -491,5 +485,5 @@ fn negamax(b: &mut Board, depth: i32, alpha: f32, beta: f32) -> f32 {
 fn main() {
     let b = setup();
     println!("{}", b.evaluate());
-    println!("{}", negamax(&mut b.clone(), 10, -999999., 999999.));
+    println!("{}", negamax(b.clone(), 3, -999999., 999999.));
 }
