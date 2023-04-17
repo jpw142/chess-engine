@@ -408,7 +408,7 @@ impl Evaluate for Board {
                 Type::Rook => 5.63,
                 Type::Queen => 9.5,
                 Type::King => 9999.,
-            } * &self.b[i as usize].c;
+            } *&self.b[i as usize].c;
         };
         return sum;
     }
@@ -485,5 +485,5 @@ fn negamax(mut b: Board, depth: i32, mut alpha: f32, beta: f32) -> f32 {
 fn main() {
     let b = setup();
     println!("{}", b.evaluate());
-    println!("{}", negamax(b.clone(), 3, -999999., 999999.));
+    println!("{}", negamax(b.clone(), 10, -999999., 999999.));
 }
