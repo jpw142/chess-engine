@@ -416,6 +416,7 @@ impl Evaluate for Board {
 
 fn domove(mut b: Board, m: Move) -> Board {
     b.b[(m.y1*WIDTH + m.x1) as usize] = m.p0;
+    b.b[(m.y1*WIDTH + m.x1) as usize] = Piece{p: Type::None, c: NONE};
     return b;
 }
 
@@ -442,7 +443,7 @@ fn setup() -> Board {
     b.write(3, 1, Piece{p: Type::Pawn, c: WHITE});
     b.write(4, 1, Piece{p: Type::Pawn, c: WHITE});
     b.write(5, 1, Piece{p: Type::Pawn, c: WHITE});
-    b.write(6, 1, Piece{p: Type::Pawn, c: WHITE});
+    b.write(6, 3, Piece{p: Type::Pawn, c: WHITE});
     b.write(7, 1, Piece{p: Type::Pawn, c: WHITE});
     // Black Pieces
     b.write(0, 7, Piece{p: Type::Rook, c: BLACK});
@@ -464,32 +465,31 @@ fn setup() -> Board {
     return b
 }
 
-fn negamax(b: &mut Board, depth: i32, alpha: f32, beta: f32, color: f32) -> f32 {
+fn negamax(b: &mut Board, depth: i32, alpha: f32, beta: f32) -> f32 {
     if depth == 0{
-        return color * b.evaluate();
+        return b.evaluate();
     }
     b.calculate();
     let mut _alpha = alpha;
     let _beta = beta;
-    let _color = color;
     let mut value: f32 = -9999999.;
     for m in b.clone().moves {
         let neg_alpha = _alpha * -1.;
         let neg_beta = _beta * -1.;
-        let neg_color = _color * -1.;
+    
         let mut b_new = domove(b.clone(), m);
-        value = value.max(-1. * negamax(&mut b_new, depth - 1, neg_beta, neg_alpha, neg_color));
+        value = value.max(-1. * negamax(&mut b_new, depth - 1, neg_beta, neg_alpha));
         undomove(b_new, m);
         _alpha = alpha.max(value);
         if _alpha >= _beta {
             break;
         }  
     }
-    return value
+    return value;
 }
 
 fn main() {
     let b = setup();
     println!("{}", b.evaluate());
-    println!("{}", negamax(&mut b.clone(), 0, -999999., 999999., b.c));
+    println!("{}", negamax(&mut b.clone(), 10, -999999., 999999.));
 }
