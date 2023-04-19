@@ -1,3 +1,9 @@
+// use std::fs::{OpenOptions};
+// use std::io::{Write};
+
+use core::time;
+use std::{thread, sync::{Arc}};
+
 const WIDTH:i32 = 8;
 const WHITE:f32 = 1.;
 const NONE:f32 = 0.;
@@ -63,6 +69,7 @@ struct Board {
     b: [Piece; 64],
     moves: Vec<Move>,
     moves_made: Vec<Move>,
+    winner: i32,
 }
 
 trait Read {
@@ -77,10 +84,10 @@ impl Read for Board {
     }
 }
 
-trait Write {
+trait BWrite {
     fn write(&mut self, x: i32, y: i32, p: Piece);
 }
-impl Write for Board {
+impl BWrite for Board {
     fn write(&mut self, x: i32, y: i32, p: Piece) {
         self.b[(y*WIDTH + x) as usize] = p;
     }
@@ -114,13 +121,13 @@ fn calc_pawn(b:&mut Board, x: i32, y: i32, piece: Piece){
     // Capture Forward (-1 or 1 depending on color) right
     if let Some(piece_dest) = b.read(x+1, y + color as i32) {
         if piece_dest.p != Type::None && piece_dest.c != color {
-            b.moves.push(Move{p0: piece, x0: x, y0: y, p1: piece_dest, x1: x-1, y1: y + (color as i32), capture: true, promotion: is_last, enpassant: false, castle: false});
+            b.moves.push(Move{p0: piece, x0: x, y0: y, p1: piece_dest, x1: x+1, y1: y + (color as i32), capture: true, promotion: is_last, enpassant: false, castle: false});
         }
     }
     // Capture Forward (-1 or 1 depending on color) left
     if let Some(piece_dest) = b.read(x-1, y + color as i32) {
         if piece_dest.p != Type::None && piece_dest.c != color {
-            b.moves.push(Move{p0: piece, x0: x, y0: y, p1: piece_dest, x1: x+1, y1: y + (color as i32), capture: true, promotion: is_last, enpassant: false, castle: false});
+            b.moves.push(Move{p0: piece, x0: x, y0: y, p1: piece_dest, x1: x-1, y1: y + (color as i32), capture: true, promotion: is_last, enpassant: false, castle: false});
         }
     }
     // En Passant Left
@@ -414,19 +421,48 @@ impl Evaluate for Board {
     }
 }
 
-fn domove(b: &mut Board, m: Move){
-    // println!("{:?}", m);
-    b.b[(m.y1*WIDTH + m.x1) as usize] = m.p0;
-    b.b[(m.y0*WIDTH + m.x0) as usize] = Piece{p: Type::None, c: NONE};
+fn domove(b: &Board, mo: &Move) -> Board{
+    // Open File
+    // let file_name = "log.txt";
+    // let mut file = OpenOptions::new()
+    //     .read(true)
+    //     .write(true)
+    //     .create(false)
+    //     .append(true)
+    //     .open(file_name).unwrap();
+
+    // Log Moves into File
+    // match write!(file, "{}", format!("{:?}{:?}{:?}\n", m.p0.p, m.x1, m.y1)) {
+    //     Ok(_) => (),
+    //     Err(_) => println!("Problem writing move {:?}", file),
+    // }
+
+    // If Promotion for Pawn
+    let m = mo.clone();
+    let mut board = b.clone();
+    if m.promotion == true{
+        board.b[(m.y1*WIDTH + m.x1) as usize] = Piece{p: Type::Queen, c: m.p0.c};
+        board.b[(m.y0*WIDTH + m.x0) as usize] = Piece{p: Type::None, c: NONE};
+    }
+    // Else normal move
+    else {
+    board.b[(m.y1*WIDTH + m.x1) as usize] = m.p0;
+    board.b[(m.y0*WIDTH + m.x0) as usize] = Piece{p: Type::None, c: NONE};
+    }
+    board.moves_made.push(m);
+    if m.p1.p == Type::King {
+        board.winner = (m.p1.c * -1.) as i32;
+    }
+    else {
+        board.winner = 0;
+    }
+    board.c *= -1.;
+    return board;
 }
 
-fn undomove(b: &mut Board, m: Move){
-    b.b[(m.y1*WIDTH + m.x1) as usize] = m.p1;
-    b.b[(m.y0*WIDTH + m.x0) as usize] = m.p0;
-}
 
 fn setup() -> Board {
-    let mut b: Board = Board { c: WHITE, b: [Piece{p: Type::None, c: NONE}; 64], moves: vec![], moves_made: vec![]};
+    let mut b: Board = Board { c: WHITE, b: [Piece{p: Type::None, c: NONE}; 64], moves: vec![], moves_made: vec![], winner: 0};
     // White pieces
     b.write(0, 0, Piece{p: Type::Rook, c: WHITE});
     b.write(1, 0, Piece{p: Type::Knight, c: WHITE});
@@ -442,7 +478,7 @@ fn setup() -> Board {
     b.write(3, 1, Piece{p: Type::Pawn, c: WHITE});
     b.write(4, 1, Piece{p: Type::Pawn, c: WHITE});
     b.write(5, 1, Piece{p: Type::Pawn, c: WHITE});
-    b.write(6, 3, Piece{p: Type::Pawn, c: WHITE});
+    b.write(6, 1, Piece{p: Type::Pawn, c: WHITE});
     b.write(7, 1, Piece{p: Type::Pawn, c: WHITE});
     // Black Pieces
     b.write(0, 7, Piece{p: Type::Rook, c: BLACK});
@@ -465,15 +501,13 @@ fn setup() -> Board {
 }
 
 fn negamax(mut b: Board, depth: i32, mut alpha: f32, beta: f32) -> f32 {
-    if depth == 0{
+    if depth == 0 || b.winner != 0{
         return b.c * b.evaluate();
     }
     b.calculate();
     let mut value: f32 = -9999999.;
     for m in b.clone().moves {
-        domove(&mut b, m);
-        value = value.max(-1. * negamax(b.clone(), depth - 1, beta * -1., alpha * -1.));
-        undomove(&mut b, m);
+        value = value.max(-1. * negamax(domove(&b, &m), depth - 1, beta * -1., alpha * -1.));
         alpha = alpha.max(value);
         if alpha >= beta {
             break;
@@ -482,8 +516,82 @@ fn negamax(mut b: Board, depth: i32, mut alpha: f32, beta: f32) -> f32 {
     return value;
 }
 
+use indicatif::{ProgressBar, ProgressStyle};
+
 fn main() {
-    let b = setup();
-    println!("{}", b.evaluate());
-    println!("{}", negamax(b.clone(), 10, -999999., 999999.));
+    let depth = 6;
+    // Create Log File
+    // let file_name = "log.txt";
+    // let mut file = OpenOptions::new()
+    //     .read(true)
+    //     .write(true)
+    //     .create(true)
+    //     .append(false)
+    //     .open(file_name).unwrap();
+
+    // Create Board
+    let mut b= setup();
+
+    // Calculate moves for the board
+    b.calculate();
+
+    println!("Heuristic Score: {}", b.evaluate());
+
+    // Immutable reference across threads
+    let arc_b = Arc::new(b.clone());
+
+    // List of threads that we generate
+    let mut threads: Vec<_> = vec![];
+
+    // Thread bar cause I'm a lunatic
+    let thread_bar = ProgressBar::new((b.clone().moves.len()) as u64);
+    thread_bar.set_style(ProgressStyle::with_template("{spinner:.green} [{wide_bar:.green/blue}] [{pos}/{len} Threads Generated]")
+    .unwrap()
+    .progress_chars("#>-"));
+
+    for i in 0..b.clone().moves.len(){
+
+        // Copy our board data
+        let arc_b = Arc::clone(&arc_b);
+
+        // Create a thread that does the negamax function
+        let handle = std::thread::spawn(move || {
+                let value =  negamax(domove(&arc_b, &arc_b.moves[i]), depth, -999999., 999999.);
+                return (value, arc_b.moves[i]);
+       
+        });
+        // Puts this thread into our list of threads
+        threads.push(handle);
+        thread_bar.inc(1);
+    }
+
+    let mut moves: Vec<Move> = vec![];
+    let mut values: Vec<f32> = vec![];
+
+    let bar = ProgressBar::new((b.clone().moves.len()) as u64);
+    bar.set_style(ProgressStyle::with_template("{spinner:.green} [{elapsed}] [{wide_bar:.cyan/blue}] [{pos}/{len} Moves]")
+    .unwrap()
+    .progress_chars("#>-"));
+    bar.tick();
+
+    // For each thread wait for them to finish and unwrap their tuple results
+    for thread in threads {
+        let (v, m) = thread.join().unwrap();
+        moves.push(m);
+        values.push(v);
+        // This is entirely just so the bar looks prettier and is in fact less efficient and stupid
+        bar.inc(1);
+        thread::sleep(time::Duration::from_millis(20))
+    }  
+    
+    // Find Max
+    let mut max_index = 0;
+    for i in 0..moves.len() {
+        if values[i] > values[max_index] {
+            max_index = i;
+        }
+    }
+    println!("Best Move is:");
+    println!("{:?} from ({},{}) to ({},{}) with a value of {}", moves[max_index].p0, moves[max_index].x0, moves[max_index].y0, moves[max_index].x1, moves[max_index].y1, values[max_index]);
+    
 }

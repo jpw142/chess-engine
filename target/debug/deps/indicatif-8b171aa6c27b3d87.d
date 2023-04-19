@@ -1,0 +1,13 @@
+c:\Users\jackw\OneDrive\Desktop\chess\chess-engine\target\debug\deps\indicatif-8b171aa6c27b3d87.rmeta: C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\lib.rs C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\draw_target.rs C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\format.rs C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\iter.rs C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\multi.rs C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\progress_bar.rs C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\state.rs C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\style.rs C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\term_like.rs
+
+c:\Users\jackw\OneDrive\Desktop\chess\chess-engine\target\debug\deps\indicatif-8b171aa6c27b3d87.d: C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\lib.rs C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\draw_target.rs C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\format.rs C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\iter.rs C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\multi.rs C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\progress_bar.rs C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\state.rs C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\style.rs C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\term_like.rs
+
+C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\lib.rs:
+C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\draw_target.rs:
+C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\format.rs:
+C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\iter.rs:
+C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\multi.rs:
+C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\progress_bar.rs:
+C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\state.rs:
+C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\style.rs:
+C:\Users\jackw\.cargo\registry\src\github.com-1ecc6299db9ec823\indicatif-0.17.3\src\term_like.rs:
