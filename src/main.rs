@@ -3,6 +3,7 @@
 
 use core::time;
 use std::{thread, sync::{Arc}};
+use indicatif::{ProgressBar, ProgressStyle};
 
 const WIDTH:i32 = 8;
 const WHITE:f32 = 1.;
@@ -505,7 +506,7 @@ fn negamax(mut b: Board, depth: i32, mut alpha: f32, beta: f32) -> f32 {
         return b.c * b.evaluate();
     }
     b.calculate();
-    let mut value: f32 = -9999999.;
+    let mut value: f32 = -1. * f32::MAX;
     for m in b.clone().moves {
         value = value.max(-1. * negamax(domove(&b, &m), depth - 1, beta * -1., alpha * -1.));
         alpha = alpha.max(value);
@@ -515,8 +516,6 @@ fn negamax(mut b: Board, depth: i32, mut alpha: f32, beta: f32) -> f32 {
     }
     return value;
 }
-
-use indicatif::{ProgressBar, ProgressStyle};
 
 fn main() {
     let depth = 6;
